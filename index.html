@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chakra Pithas on the Head — Sahaja Yoga</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a14;color:#e8e0d4;font-family:'Georgia','Times New Roman',serif;overflow:hidden;height:100vh;width:100vw}
+#c{display:block;width:100%;height:100%}
+#title{position:absolute;top:12px;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;z-index:10}
+#title h1{font-size:18px;font-weight:400;letter-spacing:2px;color:#f0e6d3;text-shadow:0 0 30px rgba(255,200,100,0.3)}
+#title p{font-size:10px;color:#a09080;margin-top:3px;letter-spacing:1px}
+#legend{position:absolute;top:72px;right:10px;background:rgba(15,12,20,0.88);border:1px solid rgba(255,200,120,0.15);border-radius:10px;padding:0;width:172px;z-index:10;backdrop-filter:blur(8px);overflow:hidden;transition:max-height 0.4s ease}
+#legend.collapsed{max-height:32px}
+#legend-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;user-select:none}
+#legend-header h3{font-size:10px;letter-spacing:1.5px;color:#c0a878;text-transform:uppercase;margin:0}
+#legend-toggle{font-size:14px;color:#807060;transition:transform 0.3s}
+#legend.collapsed #legend-toggle{transform:rotate(180deg)}
+#legend-body{padding:0 12px 10px}
+.leg-item{display:flex;align-items:center;gap:7px;cursor:pointer;transition:all 0.2s;border-radius:4px;padding:3px 5px;margin:0 -5px}
+.leg-item:hover{background:rgba(255,200,120,0.08)}
+.leg-item.active{background:rgba(255,200,120,0.15)}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 5px currentColor}
+.leg-label{font-size:10px;color:#c8baa8}
+.leg-num{font-size:9px;color:#887860;min-width:16px}
+#info{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(15,12,20,0.92);border:1px solid rgba(255,200,120,0.2);border-radius:12px;padding:0;max-width:400px;width:90%;z-index:10;backdrop-filter:blur(10px);overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);max-height:0;opacity:0;pointer-events:none}
+#info.show{max-height:300px;opacity:1;pointer-events:auto;padding:16px 18px}
+#info-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+#info-dot{width:14px;height:14px;border-radius:50%}
+#info-name{font-size:15px;color:#f0e6d3}
+#info-num{font-size:11px;color:#a09080;margin-left:auto}
+#info-desc{font-size:11px;line-height:1.65;color:#b8a890}
+#info-qualities{margin-top:6px;font-size:10px;color:#a09878}
+#info-close{position:absolute;top:8px;right:12px;background:none;border:none;color:#706050;cursor:pointer;font-size:15px;padding:4px}
+#hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;color:#504838;letter-spacing:1px;z-index:5;transition:opacity 0.5s}
+#hint.hidden{opacity:0}
+#view-btns{position:absolute;top:72px;left:10px;display:flex;flex-direction:column;gap:5px;z-index:10}
+.vbtn{background:rgba(15,12,20,0.8);border:1px solid rgba(255,200,120,0.15);color:#b0a088;font-size:9px;padding:5px 9px;border-radius:6px;cursor:pointer;font-family:inherit;letter-spacing:0.5px;transition:all 0.2s}
+.vbtn:hover,.vbtn.active{background:rgba(255,200,120,0.12);color:#e8d8c0;border-color:rgba(255,200,120,0.3)}
+#opacity-ctl{position:absolute;bottom:8px;right:10px;z-index:10;display:flex;align-items:center;gap:6px}
+#opacity-ctl label{font-size:9px;color:#706050}
+#opacity-ctl input{width:50px;accent-color:#c0a878}
+#loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:20}
+#loading h2{font-size:16px;color:#c0a878;font-weight:400;letter-spacing:1px}
+#loading p{font-size:11px;color:#706050;margin-top:8px}
+#loading .spinner{width:36px;height:36px;border:3px solid rgba(255,200,120,0.15);border-top-color:#c0a878;border-radius:50%;animation:spin 1s linear infinite;margin:16px auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading.hidden{display:none}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="title"><h1>Chakra Pithas on the Head</h1><p>Sahaja Yoga — Subtle System</p></div>
+<div id="loading"><div class="spinner"></div><h2>Loading 3D Head Model...</h2><p>Fetching from GitHub...</p></div>
+<div id="view-btns">
+  <button class="vbtn" data-view="front">Front</button>
+  <button class="vbtn" data-view="right">Right</button>
+  <button class="vbtn" data-view="left">Left</button>
+  <button class="vbtn" data-view="back">Back</button>
+  <button class="vbtn" data-view="top">Top</button>
+</div>
+<div id="legend">
+  <div id="legend-header"><h3>Chakra Pithas</h3><span id="legend-toggle">▼</span></div>
+  <div id="legend-body"></div>
+  <div style="padding:6px 12px 10px;font-size:8px;color:#605848;line-height:1.4;font-style:italic;border-top:1px solid rgba(255,200,120,0.08)">Colors used are for representational purpose only and not true colors of chakras.</div>
+</div>
+<div id="info"><button id="info-close">&times;</button><div id="info-header"><div id="info-dot"></div><div id="info-name"></div><div id="info-num"></div></div><div id="info-desc"></div><div id="info-qualities"></div></div>
+<div id="hint">Drag to rotate · Scroll to zoom · Click a chakra point</div>
+<div id="opacity-ctl"><label>Head</label><input type="range" min="5" max="100" value="100" id="opaSlider"></div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── STL PARSER ──
+function parseSTL(buffer){
+  var reader=new DataView(buffer);
+  var numTri=reader.getUint32(80,true);
+  var expected=80+4+numTri*50;
+  if(buffer.byteLength>=expected&&numTri>0&&numTri<10000000){
+    var verts=new Float32Array(numTri*9);
+    var norms=new Float32Array(numTri*9);
+    var off=84;
+    for(var i=0;i<numTri;i++){
+      var nx=reader.getFloat32(off,true);off+=4;
+      var ny=reader.getFloat32(off,true);off+=4;
+      var nz=reader.getFloat32(off,true);off+=4;
+      for(var j=0;j<3;j++){
+        var idx=i*9+j*3;
+        verts[idx]=reader.getFloat32(off,true);off+=4;
+        verts[idx+1]=reader.getFloat32(off,true);off+=4;
+        verts[idx+2]=reader.getFloat32(off,true);off+=4;
+        norms[idx]=nx;norms[idx+1]=ny;norms[idx+2]=nz;
+      }
+      off+=2;
+    }
+    var geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(verts,3));
+    geo.setAttribute('normal',new THREE.BufferAttribute(norms,3));
+    return geo;
+  }
+  // ASCII fallback
+  var text=new TextDecoder().decode(new Uint8Array(buffer));
+  var vs=[],ns=[];
+  var nm=/facet\s+normal\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)/g;
+  var vm=/vertex\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)/g;
+  var allN=[],m;
+  while((m=nm.exec(text))!==null)allN.push([parseFloat(m[1]),parseFloat(m[2]),parseFloat(m[3])]);
+  var vi2=0;
+  while((m=vm.exec(text))!==null){
+    vs.push(parseFloat(m[1]),parseFloat(m[2]),parseFloat(m[3]));
+    var n=allN[Math.floor(vi2/3)]||[0,0,1];
+    ns.push(n[0],n[1],n[2]);vi2++;
+  }
+  var g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(vs),3));
+  g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(ns),3));
+  return g;
+}
+
+// ── LOCKED COORDINATES ──
+var CHAKRAS=[
+  {id:'7',num:7,name:'Sahasrara',color:'#e040e0',pos:[0.00,1.50,0.04],desc:'The crown chakra — the seventh and highest energy center. When the Kundalini pierces this chakra, one achieves Self-Realization and connection with the All-Pervading Power.',qualities:'Integration · Collective Consciousness · Silence · Joy'},
+  {id:'4L',num:4,name:'Heart (Left)',color:'#dd2222',pos:[-0.39,1.34,0.00],desc:'The left heart pitha — seat of the Spirit (Atma) and the motherly principle. Connected to a sense of security and joy of existence.',qualities:'Existence of Spirit · Security · Motherly Love'},
+  {id:'4R',num:4,name:'Heart (Right)',color:'#dd2222',pos:[0.46,1.28,0.00],desc:'The right heart pitha — connected to the fatherly principle, boundaries, and responsible behavior.',qualities:'Fatherhood · Boundaries · Sense of Duty'},
+  {id:'3R',num:3,name:'Nabhi (Right)',color:'#22bb44',pos:[0.00,1.32,0.46],desc:'The right navel chakra pitha. Connected to the liver and right-side sustenance. Governs attention, satisfaction and evolution.',qualities:'Satisfaction · Generosity · Dharma · Evolution'},
+  {id:'3L',num:3,name:'Nabhi (Left)',color:'#22bb44',pos:[0.00,1.43,-0.50],desc:'The left navel chakra pitha toward the back of the head. Connected to the spleen and left-side well-being.',qualities:'Satisfaction · Peace · Household Dharma'},
+  {id:'5',num:5,name:'Vishuddhi',color:'#3366dd',pos:[0.00,1.04,0.68],desc:'The throat chakra pitha on the head, located just above the Ekadasha Rudra row near the hairline. Governs communication, collectivity and witness state.',qualities:'Communication · Diplomacy · Collectivity · Detachment'},
+  {id:'6',num:6,name:'Agnya (Front)',color:'#dddddd',pos:[0.00,0.82,0.73],desc:'The front Agnya pitha at the forehead center. Seat of Lord Jesus Christ. Governs forgiveness, thought control and humility.',qualities:'Forgiveness · Humility · Thought Cessation'},
+  {id:'6b',num:6,name:'Agnya (Back)',color:'#bbbbbb',pos:[0.00,0.83,-0.96],desc:'The back Agnya pitha — connected to the ego and superego. Clearing this releases conditionings and false identifications.',qualities:'Ego/Superego Balance · Past Release'},
+  {id:'H',num:'H',name:'Hamsa',color:'#88c8e8',pos:[0.00,0.58,0.75],desc:'The Hamsa chakra pitha between the eyebrows. Governs discrimination — the ability to judge right from wrong using vibrations.',qualities:'Discrimination · Discernment · Good Judgment'},
+  {id:'1L',num:1,name:'Mooladhara',color:'#ee8822',pos:[0.00,0.53,-0.98],desc:'The first chakra pitha on the back of the head. Seat of Shri Ganesha. Governs innocence, wisdom, and purity — the foundation of the subtle system.',qualities:'Innocence · Wisdom · Purity · Auspiciousness'},
+  {id:'2R',num:2,name:'Swadhistan (Right)',color:'#ddcc22',pos:[0.39,0.83,-0.86],desc:'The right Swadhisthan pitha — connected to creativity, thinking, and the liver.',qualities:'Creativity · Pure Knowledge · Aesthetics'},
+  {id:'2L',num:2,name:'Swadhistan (Left)',color:'#ddcc22',pos:[-0.39,0.83,-0.86],desc:'The left Swadhisthan pitha — connected to pure knowledge and left-side creativity.',qualities:'Pure Knowledge · Inner Creativity'},
+  {id:'5b',num:5,name:'Vishuddhi (Nape)',color:'#3366dd',pos:[0.00,-1.01,-0.91],desc:'The back Vishuddhi pitha at the nape of the neck. Connected to feelings of guilt.',qualities:'Release of Guilt · Self-Respect · Sweet Speech'},
+];
+var UNIQUE_CHAKRAS=[
+  {num:1,name:'Mooladhara',color:'#ee8822'},{num:2,name:'Swadhistan',color:'#ddcc22'},
+  {num:3,name:'Nabhi / Void',color:'#22bb44'},{num:4,name:'Heart',color:'#dd2222'},
+  {num:5,name:'Vishuddhi',color:'#3366dd'},{num:6,name:'Agnya',color:'#dddddd'},
+  {num:7,name:'Sahasrara',color:'#e040e0'},{num:'H',name:'Hamsa',color:'#88c8e8'},
+  {num:'E',name:'Ekadasha Rudra',color:'#9988bb'},
+];
+
+// ── THREE.JS ──
+var canvas=document.getElementById('c');
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.1,100);
+var renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setClearColor(0x0a0a14);
+
+scene.add(new THREE.AmbientLight(0xaaaacc,0.6));
+var dL=new THREE.DirectionalLight(0xffeedd,0.8);dL.position.set(3,4,5);scene.add(dL);
+var dL2=new THREE.DirectionalLight(0xaabbdd,0.35);dL2.position.set(-3,2,-4);scene.add(dL2);
+var pL=new THREE.PointLight(0xffcc88,0.3,12);pL.position.set(0,3,2);scene.add(pL);
+var fL=new THREE.PointLight(0xffe8cc,0.25,8);fL.position.set(0,0,5);scene.add(fL);
+
+var headGroup=new THREE.Group();
+scene.add(headGroup);
+var headModel=null;
+var headOpacity=1.0;
+
+var skinMat=new THREE.MeshStandardMaterial({color:0xc4956a,roughness:0.55,metalness:0.02,transparent:true,opacity:1.0,side:THREE.DoubleSide});
+
+// ── LOAD STL ──
+var STL_URL='https://raw.githubusercontent.com/rahulscientist-ux/Sahaja-Chakras-on-Head/main/Meshy_AI_Create%20a%20realistic%20human%20head.stl';
+
+function onModelReady(geometry){
+  geometry.computeVertexNormals();
+  geometry.rotateX(-Math.PI/2);
+  geometry.computeBoundingBox();
+  var box=geometry.boundingBox;
+  var center=new THREE.Vector3();box.getCenter(center);
+  geometry.translate(-center.x,-center.y,-center.z);
+  var size=new THREE.Vector3();box.getSize(size);
+  var maxDim=Math.max(size.x,size.y,size.z);
+  var scale=3.0/maxDim;
+  geometry.scale(scale,scale,scale);
+  geometry.computeBoundingBox();
+  box=geometry.boundingBox;center=new THREE.Vector3();
+  box.getCenter(center);
+  geometry.translate(-center.x,-center.y,-center.z);
+  headModel=new THREE.Mesh(geometry,skinMat);
+  headModel.name='Head';
+  headGroup.add(headModel);
+  document.getElementById('loading').classList.add('hidden');
+}
+
+function loadSTL(){
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET',STL_URL,true);
+  xhr.responseType='arraybuffer';
+  xhr.onprogress=function(e){if(e.lengthComputable){document.querySelector('#loading p').textContent='Loading... '+Math.round(e.loaded/e.total*100)+'%';}};
+  xhr.onload=function(){
+    if(xhr.status===200||xhr.status===0){
+      try{onModelReady(parseSTL(xhr.response));}
+      catch(e){console.error('STL parse error:',e);document.getElementById('loading').classList.add('hidden');}
+    }else{document.getElementById('loading').classList.add('hidden');}
+  };
+  xhr.onerror=function(){document.getElementById('loading').classList.add('hidden');};
+  xhr.send();
+}
+
+loadSTL();
+
+// ── CHAKRA MARKERS ──
+var markerGroup=new THREE.Group();
+headGroup.add(markerGroup);
+var chakraObjs=[];
+
+CHAKRAS.forEach(function(ch){
+  var grp=new THREE.Group();
+  grp.position.set(ch.pos[0],ch.pos[1],ch.pos[2]);
+  var sphere=new THREE.Mesh(new THREE.SphereGeometry(0.065,16,12),new THREE.MeshBasicMaterial({color:new THREE.Color(ch.color)}));
+  grp.add(sphere);
+  var glow=new THREE.Mesh(new THREE.SphereGeometry(0.11,16,12),new THREE.MeshBasicMaterial({color:new THREE.Color(ch.color),transparent:true,opacity:0.18}));
+  grp.add(glow);
+  var ring=new THREE.Mesh(new THREE.RingGeometry(0.09,0.115,24),new THREE.MeshBasicMaterial({color:new THREE.Color(ch.color),transparent:true,opacity:0.25,side:THREE.DoubleSide}));
+  ring.lookAt(new THREE.Vector3(0,ch.pos[1]*0.3,0));grp.add(ring);
+  var lc=document.createElement('canvas');lc.width=64;lc.height=64;
+  var ctx=lc.getContext('2d');ctx.fillStyle=ch.color;ctx.font='bold 34px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(ch.num==='H'?'H':String(ch.num),32,32);
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(lc),transparent:true,opacity:0.85}));
+  sp.scale.set(0.2,0.2,1);
+  var len=Math.sqrt(ch.pos[0]*ch.pos[0]+ch.pos[1]*ch.pos[1]+ch.pos[2]*ch.pos[2])||1;
+  sp.position.set(ch.pos[0]/len*0.18,ch.pos[1]/len*0.18,ch.pos[2]/len*0.18);
+  grp.add(sp);
+  markerGroup.add(grp);
+  chakraObjs.push({group:grp,sphere:sphere,glow:glow,data:ch});
+});
+
+// Ekadasha Rudra — between Vishuddhi(y=1.04,z=0.68) and Agnya(y=0.82,z=0.73)
+for(var ei=0;ei<10;ei++){
+  var t=ei/9;
+  var spread=0.72;
+  var ex=-spread/2+t*spread;
+  var ey=0.93;
+  var ezBase=0.71;
+  var curv=1-Math.pow(ex/(spread/2),2);
+  var ez=ezBase+curv*0.04;
+  var dot=new THREE.Mesh(new THREE.SphereGeometry(0.03,8,6),new THREE.MeshBasicMaterial({color:0x9988bb,transparent:true,opacity:0.65}));
+  dot.position.set(ex,ey,ez);
+  markerGroup.add(dot);
+}
+
+// ── INTERACTION ──
+var raycaster=new THREE.Raycaster();var mouse=new THREE.Vector2();var selectedChakra=null;
+function onPointerClick(e){
+  if(wasDragging)return;
+  if(e.target.closest('#legend')||e.target.closest('#info')||e.target.closest('#view-btns')||e.target.closest('#opacity-ctl'))return;
+  mouse.x=(e.clientX/innerWidth)*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(mouse,camera);
+  var closest=null,closestDist=Infinity;
+  chakraObjs.forEach(function(c){
+    var wp=new THREE.Vector3();c.sphere.getWorldPosition(wp);
+    var d=raycaster.ray.distanceToPoint(wp);
+    var along=raycaster.ray.direction.dot(wp.clone().sub(raycaster.ray.origin));
+    if(d<0.3&&along>0&&d<closestDist){closestDist=d;closest=c;}
+  });
+  if(closest)selectChakra(closest);else deselectChakra();
+}
+function selectChakra(obj){
+  deselectVisual();selectedChakra=obj;var d=obj.data;
+  document.getElementById('info-dot').style.cssText='background:'+d.color+';box-shadow:0 0 12px '+d.color;
+  document.getElementById('info-name').textContent=d.name;
+  document.getElementById('info-num').textContent=d.num==='H'?'Hamsa':'Chakra '+d.num;
+  document.getElementById('info-desc').textContent=d.desc;
+  document.getElementById('info-qualities').textContent=d.qualities;
+  document.getElementById('info').classList.add('show');document.getElementById('hint').classList.add('hidden');
+  document.querySelectorAll('.leg-item').forEach(function(el){el.classList.toggle('active',el.dataset.num==d.num);});
+}
+function deselectVisual(){selectedChakra=null;document.querySelectorAll('.leg-item').forEach(function(el){el.classList.remove('active');});}
+function deselectChakra(){deselectVisual();document.getElementById('info').classList.remove('show');}
+document.getElementById('info-close').onclick=deselectChakra;
+
+// ── ORBIT ──
+var isDragging=false,wasDragging=false,prevX=0,prevY=0;
+var rotY=0,rotX=0.12,targetRotY=0,targetRotX=0.12;
+var dist=5.2,targetDist=5.2;
+// Detect touch device
+var isTouch='ontouchstart' in window||navigator.maxTouchPoints>0;
+var rotSpeed=isTouch?0.018:0.006; // 3x faster rotation on touch
+
+canvas.addEventListener('pointerdown',function(e){isDragging=true;wasDragging=false;prevX=e.clientX;prevY=e.clientY;});
+window.addEventListener('pointermove',function(e){
+  if(!isDragging)return;var dx=e.clientX-prevX,dy=e.clientY-prevY;
+  if(Math.abs(dx)>2||Math.abs(dy)>2)wasDragging=true;
+  targetRotY+=dx*rotSpeed;targetRotX+=dy*rotSpeed;
+  targetRotX=Math.max(-1.3,Math.min(1.3,targetRotX));prevX=e.clientX;prevY=e.clientY;
+});
+window.addEventListener('pointerup',function(e){var d=wasDragging;isDragging=false;if(!d)onPointerClick(e);});
+canvas.addEventListener('wheel',function(e){e.preventDefault();targetDist+=e.deltaY*0.004;targetDist=Math.max(2.5,Math.min(9,targetDist));},{passive:false});
+
+// Touch: single finger rotate + two finger pinch zoom
+var touchStartX=0,touchStartY=0,td0=0,isSingleTouch=false;
+canvas.addEventListener('touchstart',function(e){
+  if(e.touches.length===1){
+    isSingleTouch=true;
+    touchStartX=e.touches[0].clientX;
+    touchStartY=e.touches[0].clientY;
+    prevX=touchStartX;prevY=touchStartY;
+    isDragging=true;wasDragging=false;
+  }
+  if(e.touches.length===2){
+    isSingleTouch=false;
+    var dx=e.touches[0].clientX-e.touches[1].clientX;
+    var dy=e.touches[0].clientY-e.touches[1].clientY;
+    td0=Math.sqrt(dx*dx+dy*dy);
+  }
+},{passive:true});
+canvas.addEventListener('touchmove',function(e){
+  e.preventDefault();
+  if(e.touches.length===1&&isSingleTouch){
+    var dx=e.touches[0].clientX-prevX;
+    var dy=e.touches[0].clientY-prevY;
+    if(Math.abs(dx)>1||Math.abs(dy)>1)wasDragging=true;
+    targetRotY+=dx*0.018;
+    targetRotX+=dy*0.018;
+    targetRotX=Math.max(-1.3,Math.min(1.3,targetRotX));
+    prevX=e.touches[0].clientX;prevY=e.touches[0].clientY;
+  }
+  if(e.touches.length===2){
+    var dx2=e.touches[0].clientX-e.touches[1].clientX;
+    var dy2=e.touches[0].clientY-e.touches[1].clientY;
+    var d2=Math.sqrt(dx2*dx2+dy2*dy2);
+    targetDist+=(td0-d2)*0.02;
+    targetDist=Math.max(2.5,Math.min(9,targetDist));
+    td0=d2;
+  }
+},{passive:false});
+canvas.addEventListener('touchend',function(e){
+  if(e.touches.length===0){
+    var d=wasDragging;isDragging=false;isSingleTouch=false;
+  }
+},{passive:true});
+
+var views={front:{ry:0,rx:0.08},right:{ry:-Math.PI/2,rx:0.08},left:{ry:Math.PI/2,rx:0.08},back:{ry:Math.PI,rx:0.08},top:{ry:0,rx:1.25}};
+document.querySelectorAll('.vbtn').forEach(function(btn){
+  btn.addEventListener('click',function(){var v=views[btn.dataset.view];targetRotY=v.ry;targetRotX=v.rx;
+    document.querySelectorAll('.vbtn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');});
+});
+
+document.getElementById('opaSlider').addEventListener('input',function(e){
+  headOpacity=e.target.value/100;skinMat.opacity=headOpacity;
+});
+
+// ── LEGEND — collapsible ──
+document.getElementById('legend-header').addEventListener('click',function(){
+  document.getElementById('legend').classList.toggle('collapsed');
+});
+
+var legBody=document.getElementById('legend-body');
+UNIQUE_CHAKRAS.forEach(function(ch){
+  var el=document.createElement('div');el.className='leg-item';el.dataset.num=ch.num;
+  el.innerHTML='<span class="leg-num">'+ch.num+'</span><span class="leg-dot" style="background:'+ch.color+';color:'+ch.color+'"></span><span class="leg-label">'+ch.name+'</span>';
+  el.addEventListener('click',function(){
+    if(ch.num==='E'){
+      deselectVisual();el.classList.add('active');
+      document.getElementById('info-dot').style.cssText='background:'+ch.color+';box-shadow:0 0 12px '+ch.color;
+      document.getElementById('info-name').textContent='Ekadasha Rudra';
+      document.getElementById('info-num').textContent='11 Powers of Shri Shiva';
+      document.getElementById('info-desc').textContent='The 11 destroying powers of Shri Shiva, located as a row across the forehead at the hairline. When activated positively they protect the seeker and act as the final gateway before Sahasrara.';
+      document.getElementById('info-qualities').textContent='Protection · Destruction of Negativity · Final Purification';
+      document.getElementById('info').classList.add('show');document.getElementById('hint').classList.add('hidden');
+    }else{
+      var m=chakraObjs.find(function(c){return c.data.num==ch.num;});
+      if(m)selectChakra(m);
+    }
+  });
+  legBody.appendChild(el);
+});
+
+// ── ANIMATE ──
+var clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);var t=clock.elapsedTime;
+  rotY+=(targetRotY-rotY)*0.08;rotX+=(targetRotX-rotX)*0.08;dist+=(targetDist-dist)*0.08;
+  if(!isDragging&&!selectedChakra)targetRotY+=0.0005;
+  camera.position.x=Math.sin(rotY)*Math.cos(rotX)*dist;
+  camera.position.y=Math.sin(rotX)*dist+0.15;
+  camera.position.z=Math.cos(rotY)*Math.cos(rotX)*dist;
+  camera.lookAt(0,0.1,0);
+  chakraObjs.forEach(function(ch,i){
+    var pulse=1+Math.sin(t*2+i*0.7)*0.15;
+    ch.glow.scale.set(pulse,pulse,pulse);ch.glow.material.opacity=0.14+Math.sin(t*2+i*0.7)*0.07;
+    if(selectedChakra===ch){ch.sphere.scale.set(1.5,1.5,1.5);ch.glow.scale.set(pulse*1.6,pulse*1.6,pulse*1.6);ch.glow.material.opacity=0.3;}
+    else{ch.sphere.scale.set(1,1,1);}
+  });
+  renderer.render(scene,camera);
+}
+animate();
+window.addEventListener('resize',function(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+</script>
+</body>
+</html>
